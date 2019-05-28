@@ -1,0 +1,19 @@
+model{
+
+  for (cl in 1:length(Nbc))
+  {
+    sigma[cl] ~ dunif(0, 1000)
+    mu[cl] ~ dunif(0, 350)
+
+    tau[cl] <- 1 / (sigma[cl] ^ 2)
+
+    for (s in 1:Nbc[cl])
+    {
+      matBdens[s, cl] ~ dlnorm(log(mu[cl]), tau[cl])
+    }
+
+    Bcl[cl] <- mu[cl] * areascl[cl] * 1e-3  # in tons
+  }
+
+  Btot <- sum(Bcl)
+}

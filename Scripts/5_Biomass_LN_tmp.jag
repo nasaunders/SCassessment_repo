@@ -1,0 +1,29 @@
+
+model{
+  for (cl in 1:length(Nbc))
+  {
+
+    ## priors on weights and densities:
+    sigmaWbar[cl] ~ dlnorm(0, 0.1)
+    muWbar[cl] ~ dlnorm(log(meanW[cl]), 0.1)
+
+    tauWbar[cl] <- 1 / (sigmaWbar[cl] ^ 2)
+
+    sigmaDens[cl] ~ dunif(0, 100)
+    muDens[cl] ~ dlnorm(log(meanDens[cl]), 0.1)
+
+    tauDens[cl] <- 1 / (sigmaDens[cl] ^ 2)
+
+    for (s in 1:Nbc[cl])
+    {
+      matWbar[s, cl] ~ dt(muWbar[cl], tauWbar[cl], nw[s, cl])
+      matDens[s, cl] ~ dlnorm(log(muDens[cl]), tauDens[cl])
+    }
+
+    Bdens[cl] <- muWbar[cl] * muDens[cl]
+    Bcl[cl] <- Bdens[cl] * areascl[cl] * 1e-3  # in tons
+  }
+
+  BDtot <- sum(Bdens * areascl) / sum(areascl)
+  Btot <- sum(Bcl)
+}

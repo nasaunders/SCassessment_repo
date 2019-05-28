@@ -1,0 +1,32 @@
+data {
+  for (c in 1:length(Nbc))
+  {
+    B[c] <- matBdens[1, c]
+    sdObs[c] <- sd(matBdens[1:Nbc[c], c])
+  }
+
+  allCl <- 1:length(Nbc)
+
+  fittedCl <- allCl[sdObs > 0]
+}
+model {
+
+  Bcl <- B
+
+  for (cl in fittedCl)
+  {
+    sigma[cl] ~ dunif(0, 5)
+    mu[cl] ~ dlnorm(meanDens[cl], 0.1) ## dunif(minDens[cl], maxDens[cl])
+
+    tau[cl] <- 1 / (sigma[cl] ^ 2)
+
+    for (s in 1:Nbc[cl])
+    {
+      matBdens[s, cl] ~ dlnorm(log(mu[cl]), tau[cl])
+    }
+
+    Bcl[cl] <- mu[cl] * areascl[cl] * 1e-3  # in tons
+  }
+
+  Btot <- sum(Bcl)
+}

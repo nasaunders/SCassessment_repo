@@ -1,0 +1,27 @@
+model{
+  ## Loop over strata:
+  for (cl in 1:length(Nbc))
+  {
+    mu[cl] ~ dlnorm(meanDens[cl], 0.1) ## dunif(minDens[cl], maxDens[cl])
+    sigma[cl] ~ dunif(0, 10)
+
+    ## Transformation mu/sigma to Gamma parameters:
+    mu.alpha.pos[cl] <- mu[cl]
+    sd.alpha.pos[cl] <- sigma[cl]
+
+    r.alpha.pos[cl] <- mu.alpha.pos[cl] / pow(sd.alpha.pos[cl], 2)
+    s.alpha.pos[cl] <- mu.alpha.pos[cl] * r.alpha.pos[cl]
+
+    ## Loop on observations:
+    for (s in 1:Nbc[cl])
+    {
+      matBdens[s, cl] ~ dgamma(s.alpha.pos[cl], r.alpha.pos[cl])
+    }
+
+    Bcl[cl] <- mu[cl] * areascl[cl] * 1e-3  # in tons
+  }
+
+  BDtot <- sum(mu * areascl) / sum(areascl) 
+  ## Total biomass:
+  Btot <- sum(Bcl)
+}
